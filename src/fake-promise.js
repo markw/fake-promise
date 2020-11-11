@@ -15,7 +15,24 @@ export class FakePromise {
   }
 
   static reject(error) {
-    return new FakePromise( (undefined, reject) => reject(error));
+    return new FakePromise( (resolve, reject) => reject(error));
+  }
+
+  static all(promises) {
+
+    return new FakePromise( (resolve,reject) => {
+      const results = [];
+      const push = x => {
+        results.push(x);
+        if (results.length === promises.length) {
+          resolve(results);
+        }
+      };
+      promises.forEach(async p => {
+        try { push(await p); }
+        catch (error) { reject(error); }
+      });
+    });
   }
 
   constructor(executor) {

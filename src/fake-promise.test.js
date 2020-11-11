@@ -300,3 +300,89 @@ describe('Exception in Promise.then(null, onReject) results in rejection with on
 
 });
 
+describe('Promise.all returns resolved promises in order', () => {
+
+  const assertionFailed = e => fail("assertion failed: " + e.message);
+  const expect123 = result => expect(result).toStrictEqual([1,2,3]);
+
+  it('FakePromise', () =>  {
+    expect.assertions(1);
+
+    let p0_resolve;
+    const p0 = new FakePromise( (resolve,reject) => p0_resolve = resolve);
+
+    let p1_resolve;
+    const p1 = new FakePromise( (resolve,reject) => p1_resolve = resolve);
+    
+    let p2_resolve;
+    const p2 = new FakePromise( (resolve,reject) => p2_resolve = resolve);
+
+    const all = FakePromise.all([p0, p1, p2]).then(expect123).catch(assertionFailed);
+
+    p2_resolve(3);
+    p0_resolve(1);
+    p1_resolve(2);
+  });
+
+  it('Promise', () =>  {
+    expect.assertions(1);
+
+    let p0_resolve;
+    const p0 = new Promise( (resolve,reject) => p0_resolve = resolve);
+
+    let p1_resolve;
+    const p1 = new Promise( (resolve,reject) => p1_resolve = resolve);
+    
+    let p2_resolve;
+    const p2 = new Promise( (resolve,reject) => p2_resolve = resolve);
+
+    const all = Promise.all([p0, p1, p2]).then(expect123).catch(assertionFailed);
+
+    p2_resolve(3);
+    p0_resolve(1);
+    p1_resolve(2);
+  });
+});
+
+describe('Promise.all returns reason of first rejected promise', () => {
+
+  const assertionFailed = e => fail("assertion failed: " + e.message);
+
+  it('FakePromise', () =>  {
+    expect.assertions(1);
+
+    let p0_reject;
+    const p0 = new Promise( (resolve,reject) => p0_reject = reject);
+
+    let p1_reject;
+    const p1 = new Promise( (resolve,reject) => p1_reject = reject);
+    
+    let p2_reject;
+    const p2 = new Promise( (resolve,reject) => p2_reject = reject);
+
+    const all = FakePromise.all([p0, p1, p2]).catch(error => expect(error.message).toBe("two")).catch(assertionFailed);
+
+    p2_reject(Error("two"));
+    p1_reject(Error("one"));
+    p0_reject(Error("zero"));
+  });
+
+  it('Promise', () =>  {
+    expect.assertions(1);
+
+    let p0_reject;
+    const p0 = new Promise( (resolve,reject) => p0_reject = reject);
+
+    let p1_reject;
+    const p1 = new Promise( (resolve,reject) => p1_reject = reject);
+    
+    let p2_reject;
+    const p2 = new Promise( (resolve,reject) => p2_reject = reject);
+
+    const all = Promise.all([p0, p1, p2]).catch(error => expect(error.message).toBe("two")).catch(assertionFailed);
+
+    p2_reject(Error("two"));
+    p1_reject(Error("one"));
+    p0_reject(Error("zero"));
+  });
+});
