@@ -263,7 +263,6 @@ describe('Promise.catch can return a value that results in a resolved promise', 
   });
 });
 
-/*
 describe('Exception in Promise.then results in rejection', () => {
 
   const blowup = (x) => { throw Error("ugh"); };
@@ -300,5 +299,4 @@ describe('Exception in Promise.then(null, onReject) results in rejection with on
   });
 
 });
-  */
 
