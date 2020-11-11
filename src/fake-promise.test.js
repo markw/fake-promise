@@ -1,6 +1,4 @@
-import { FakePromise, Thenable } from './fake-promise';
-
-const identity = (x) => x;
+import { FakePromise } from './fake-promise';
 
 describe('thenable', () => {
 
