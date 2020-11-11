@@ -1,13 +1,14 @@
 import { FakePromise } from './fake-promise';
 
+const assertionFailed = e => fail("assertion failed: " + e.message);
+
 describe('thenable', () => {
 
   it('can be anything with a then', async () => {
     const p = {
       then: (resolve,reject) => setTimeout( () => resolve(42), 100)
     };
-    const q = await p;
-    expect(q).toBe(42);
+    expect(await p).toBe(42);
   });
 });
 
@@ -66,19 +67,13 @@ describe('Promise can only rejected once', () => {
 
 describe('Promise constructor, resolve immediately', () => {
   it('FakePromise', async () =>  {
-    var p = new FakePromise( (resolve, reject) => {
-      resolve("two");
-    });
-    var q = await p;
-    expect(q).toBe("two");
+    var p = await new FakePromise( (resolve, reject) => resolve("two"));
+    expect(p).toBe("two");
   });
 
   it('Promise', async () =>  {
-    var p = new Promise( (resolve, reject) => {
-      resolve("two");
-    });
-    var q = await p;
-    expect(q).toBe("two");
+    var p = await new Promise((resolve, reject) => resolve("two"));
+    expect(p).toBe("two");
   });
 });
 
@@ -89,30 +84,29 @@ describe('Promise constructor, deferred resolution', () => {
   };
 
   it('FakePromise', async () =>  {
-    var p = new FakePromise(delayedResolve);
-    var q = await p;
-    expect(q).toBe("two");
+    var p = await new FakePromise(delayedResolve);
+    expect(p).toBe("two");
   });
 
   it('Promise', async () =>  {
-    var p = new Promise(delayedResolve);
-    var q = await p;
-    expect(q).toBe("two");
+    var p = await new Promise(delayedResolve);
+    expect(p).toBe("two");
   });
 });
 
 describe('Promise constructor, error in executor rejects promise', () => {
 
   const wtf = (resolve, reject) => { throw Error("wtf"); };
+  const expectWtf = e => expect(e.message).toBe("wtf");
 
   it('FakePromise', async () =>  {
     expect.assertions(1);
-    new FakePromise(wtf).catch(e => expect(e.message).toBe("wtf"));
+    new FakePromise(wtf).catch(expectWtf);
   });
 
   it('Promise', async () =>  {
     expect.assertions(1);
-    new Promise(wtf).catch(e => expect(e.message).toBe("wtf"));
+    new Promise(wtf).catch(expectWtf);
   });
 
 });
@@ -161,12 +155,12 @@ describe('Promise.reject', () => {
 
   it('FakePromise', async () =>  {
     expect.assertions(1);
-    FakePromise.reject(new Error("oops")).catch(expectOops);
+    FakePromise.reject(new Error("oops")).catch(expectOops).catch(assertionFailed);
   });
 
   it('Promise', async () =>  {
     expect.assertions(1);
-    Promise.reject(new Error("oops")).catch(expectOops);
+    Promise.reject(new Error("oops")).catch(expectOops).catch(assertionFailed);
   });
 });
 
@@ -227,7 +221,6 @@ describe('Promise.catch will catch an error from chained thens', () => {
   const times3 = x => x * 3;
   const blowUp = x => { throw Error("nope"); };
   const expectNope = e => expect(e.message).toBe("nope");
-  const assertionFailed = e => fail("assertion failed: " + e.message);
 
   it('FakePromise', async () =>  {
     expect.assertions(1);
@@ -246,7 +239,6 @@ describe('Promise.catch can return a value that results in a resolved promise', 
   const times3 = x => x * 3;
   const blowUp = x => { throw Error(); };
   const return14 = e => 14;
-  const assertionFailed = e => fail("assertion failed: " + e.message);
 
   it('FakePromise', async () =>  {
     expect.assertions(1);
@@ -265,7 +257,6 @@ describe('Exception in Promise.then results in rejection', () => {
 
   const blowup = (x) => { throw Error("ugh"); };
   const expectUgh = e => expect(e.message).toBe("ugh");
-  const assertionFailed = e => fail("assertion failed: " + e.message);
 
   it('FakePromise', async () =>  {
     expect.assertions(1);
@@ -282,7 +273,6 @@ describe('Exception in Promise.then(null, onReject) results in rejection with on
 
   const blowup = () => { throw Error("boom!"); };
   const expectError = e => expect(e.message).toBe("boom!");
-  const assertionFailed = e => fail("assertion failed: " + e.message);
 
   it('FakePromise', async () =>  {
     expect.assertions(2);
@@ -300,7 +290,6 @@ describe('Exception in Promise.then(null, onReject) results in rejection with on
 
 describe('Promise.all returns resolved promises in order', () => {
 
-  const assertionFailed = e => fail("assertion failed: " + e.message);
   const expect123 = result => expect(result).toStrictEqual([1,2,3]);
 
   it('FakePromise', () =>  {
@@ -344,7 +333,6 @@ describe('Promise.all returns resolved promises in order', () => {
 
 describe('Promise.all returns reason of first rejected promise', () => {
 
-  const assertionFailed = e => fail("assertion failed: " + e.message);
 
   it('FakePromise', () =>  {
     expect.assertions(1);
