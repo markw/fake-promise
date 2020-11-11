@@ -32,7 +32,7 @@ export class FakePromise {
           this._result = x;
           this._chainedResolves.forEach(f => f(x));
         }
-      }
+      };
 
       const reject = (x) => {
         if (this.isPending()) {
@@ -40,7 +40,7 @@ export class FakePromise {
           this._result = x;
           this._chainedRejects.forEach(f => f(x));
         }
-      }
+      };
 
       try {
         executor(resolve.bind(this), reject.bind(this));

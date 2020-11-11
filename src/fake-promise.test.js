@@ -227,7 +227,7 @@ describe('Promise.catch will catch an error from chained thens', () => {
 
   const add3 = x => x + 3;
   const times3 = x => x * 3;
-  const blowUp = x => { throw Error("nope"); }
+  const blowUp = x => { throw Error("nope"); };
   const expectNope = e => expect(e.message).toBe("nope");
   const assertionFailed = e => fail("assertion failed: " + e.message);
 
