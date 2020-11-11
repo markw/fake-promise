@@ -12,7 +12,8 @@
   },
   "scripts": {
     "build": "babel src -d lib",
-    "test": "jest --watchAll"
+    "test": "jest",
+    "watch": "jest --watchAll"
   },
   "jest": {
     "verbose": true
