@@ -3,11 +3,57 @@ function isFunction(f) {
   return "function" === typeof f;
 }
 
+const PENDING   = 0;
+const FULFILLED = 1;
+const REJECTED  = 2;
+
 export class FakePromise {
+
 
   // implementation of method described at
   // https://promisesaplus.com/#the-promise-resolution-procedure
   static __resolve_promise_aplus__(promise, x) {
+
+    if (promise === x) {
+      throw new TypeError("cannot resolve a promise with itself");
+    }
+
+    var settled = false;
+
+    const resolve = y => {
+      if (!settled) {
+        FakePromise.__resolve_promise_aplus__(promise, y);
+        settled = true;
+      };
+    };
+
+    const reject = a => {
+      if (!settled) {
+        promise._private_reject(a);
+        settled = true;
+      }
+    };
+
+    if (x instanceof FakePromise) {
+      if (x.isFulfilled()) {
+        promise._private_resolve(x._result);
+      }
+      if (x.isRejected()) {
+        promise._private_reject(x._result);
+      }
+    }
+    else if ("object" === typeof x || "function" === typeof f) {
+      if (isFunction(x.then)) {
+        try { x.then(resolve, reject); } 
+        catch (error) { reject(error); }
+      }
+      else {
+        promise._private_resolve(x);
+      }
+    }
+    else {
+      promise._private_resolve(x);
+    }
   }
 
   static resolve(value) {
@@ -37,7 +83,7 @@ export class FakePromise {
 
   constructor(executor) {
     this._result = undefined;
-    this._state = "pending";
+    this._state = PENDING;
     this._chainedResolves = [];
     this._chainedRejects = [];
 
@@ -45,17 +91,13 @@ export class FakePromise {
 
       const resolve = x => {
         if (this.isPending()) {
-          this._state = "fulfilled";
-          this._result = x;
-          this._chainedResolves.forEach(f => f(x));
+          this._private_resolve(x);
         }
       };
 
       const reject = (x) => {
         if (this.isPending()) {
-          this._state = "rejected";
-          this._result = x;
-          this._chainedRejects.forEach(f => f(x));
+          this._private_reject(x);
         }
       };
 
@@ -69,47 +111,50 @@ export class FakePromise {
   }
 
   isPending() {
-    return this._state === "pending";
+    return this._state === PENDING;
+  }
+
+  isRejected() {
+    return this._state === REJECTED;
+  }
+
+  isFulfilled() {
+    return this._state === FULFILLED;
   }
 
   then(onResolve, onReject) {
     const p = new FakePromise();
 
     switch(this._state) {
-      case "pending":
+      case PENDING:
         this._chainedResolves.push(onResolve);
         this._chainedRejects.push(onReject);
         break;
 
-      case "fulfilled":
-        p._state = "fulfilled";
-        p._result = this._result;
-
+      case FULFILLED:
         if (isFunction(onResolve)) {
           try {
-            p._result = onResolve(this._result);
+            const x = onResolve(this._result);
+            FakePromise.__resolve_promise_aplus__(p, x);
           }
           catch (error) {
-            p._state = "rejected";
-            p._result = isFunction(onReject) ? onReject(error) : error;
+            p._private_reject(error);
           }
         }
         break;
 
-      case "rejected":
+      case REJECTED:
         if (isFunction(onReject)) {
           try {
-            p._result = onReject(this._result);
-            p._state = "fulfilled";
+            const x = onReject(this._result);
+            FakePromise.__resolve_promise_aplus__(p, x);
           }
           catch (error) {
-            p._state = "rejected";
-            p._result = error;
+            p._private_reject(error);
           }
         }
         else {
-          p._state = "rejected";
-          p._result = this._result;
+          p._private_reject(this._result);
         }
         break;
     }
@@ -118,5 +163,19 @@ export class FakePromise {
 
   catch(onReject) {
     return this.then(undefined, onReject);
+  }
+
+  // "private" methods, not part of the spec, not intended to be called from outside this class
+
+  _private_resolve(value) {
+    this._result = value;
+    this._state = FULFILLED;
+    this._chainedResolves.forEach(f => f(value));
+  }
+
+  _private_reject(reason) {
+    this._result = reason;
+    this._state = REJECTED;
+    this._chainedRejects.forEach(f => f(reason));
   }
 }

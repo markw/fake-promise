@@ -372,3 +372,112 @@ describe('Promise.all returns reason of first rejected promise', () => {
     p0_reject(Error("zero"));
   });
 });
+
+describe('Aplus Promise resolution', () => {
+  it ('2.3.1 cannot resolve a promise with itself', () => {
+    expect.assertions(1);
+    const p = new FakePromise();
+    try { FakePromise.__resolve_promise_aplus__(p,p); }
+    catch (error) { expect(error.message).toBe("cannot resolve a promise with itself"); }
+  });
+
+  it ('2.3.2.1 wait until x is fulfilled or rejected', () => {
+    const x = new FakePromise();
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isPending()).toBe(true);
+  });
+
+  it ('2.3.2.2 when x is fulfilled, resolve promise with its value', () => {
+    const x = FakePromise.resolve(1);
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isFulfilled()).toBe(true);
+    expect(promise._result).toBe(1);
+  });
+
+  it ('2.3.2.3 when x is rejected, resolve promise with its reason', () => {
+    const x = FakePromise.reject(Error("oops"));
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isRejected()).toBe(true);
+    expect(promise._result.message).toBe("oops");
+  });
+
+  it ('2.3.3.1 when resolve is called with value y, run [[Resolve]](promise, y)', () => {
+    const x = { then: (resolve,reject) => resolve(3) };
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isFulfilled()).toBe(true);
+    expect(promise._result).toBe(3);
+  });
+
+  it ('2.3.3.2 when reject is called with reason r, reject promise with r', () => {
+    const x = { then: (resolve,reject) => reject(Error("no")) };
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isRejected()).toBe(true);
+    expect(promise._result.message).toBe("no");
+  });
+
+  it ('2.3.3.3 (a) only the first call to resolve takes effect', () => {
+    const x = { then: (resolve,reject) => {
+      resolve(1);
+      resolve(2);
+    }};
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isFulfilled()).toBe(true);
+    expect(promise._result).toBe(1);
+  });
+
+  it ('2.3.3.3 (b) only the first call to reject takes effect', () => {
+    const x = { then: (resolve,reject) => {
+      reject(Error("no"));
+      reject(Error("yes"));
+    }};
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isRejected()).toBe(true);
+    expect(promise._result.message).toBe("no");
+  });
+
+  it ('2.3.3.3 (c) calling reject after resolve has no effect', () => {
+    const x = { then: (resolve,reject) => {
+      resolve(1);
+      reject(Error("no"));
+    }};
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isFulfilled()).toBe(true);
+    expect(promise._result).toBe(1);
+  });
+
+  it ('2.3.3.3 (d) calling resolve after reject has no effect', () => {
+    const x = { then: (resolve,reject) => {
+      reject(Error("no"));
+      resolve(1);
+    }};
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isRejected()).toBe(true);
+    expect(promise._result.message).toBe("no");
+  });
+
+  it ('2.3.3.4 when x.then is not a function, resolve promise with x', () => {
+    const x = {then:1};
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isFulfilled()).toBe(true);
+    expect(promise._result).toBe(x);
+  });
+
+  it ('2.3.4 when x is not a function or object, resolve promise with x', () => {
+    const x = 1;
+    const promise = new FakePromise();
+    FakePromise.__resolve_promise_aplus__(promise, x);
+    expect(promise.isFulfilled()).toBe(true);
+    expect(promise._result).toBe(x);
+  });
+
+});
