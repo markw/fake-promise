@@ -141,6 +141,9 @@ export class FakePromise {
             p._private_reject(error);
           }
         }
+        else {
+          p._private_resolve(this._result);
+        }
         break;
 
       case REJECTED:

@@ -199,6 +199,21 @@ describe('Promise.then chained', () => {
   });
 });
 
+describe('Promise.then if onResolve is not a function then resolve with the fulfilled value', () => {
+
+  it('FakePromise', async () =>  {
+    expect.assertions(1);
+    const p = FakePromise.resolve(12).then(undefined);
+    expect(await p).toBe(12);
+  });
+
+  it('Promise', async () =>  {
+    expect.assertions(1);
+    const p = Promise.resolve(12).then(undefined);
+    expect(await p).toBe(12);
+  });
+});
+
 describe('Promise.catch is ignored if then succeeds', () => {
 
   const expect1 = () => expect(1).toBe(1);
