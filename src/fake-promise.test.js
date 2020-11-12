@@ -101,12 +101,12 @@ describe('Promise constructor, error in executor rejects promise', () => {
 
   it('FakePromise', async () =>  {
     expect.assertions(1);
-    new FakePromise(wtf).catch(expectWtf);
+    new FakePromise(wtf).catch(expectWtf).catch(assertionFailed);
   });
 
   it('Promise', async () =>  {
     expect.assertions(1);
-    new Promise(wtf).catch(expectWtf);
+    new Promise(wtf).catch(expectWtf).catch(assertionFailed);
   });
 
 });
