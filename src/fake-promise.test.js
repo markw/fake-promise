@@ -408,7 +408,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isFulfilled()).toBe(true);
-    expect(promise._result).toBe(1);
+    expect(promise._value).toBe(1);
   });
 
   it ('2.3.2.3 when x is rejected, resolve promise with its reason', () => {
@@ -416,7 +416,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isRejected()).toBe(true);
-    expect(promise._result.message).toBe("oops");
+    expect(promise._value.message).toBe("oops");
   });
 
   it ('2.3.3.1 when resolve is called with value y, run [[Resolve]](promise, y)', () => {
@@ -424,7 +424,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isFulfilled()).toBe(true);
-    expect(promise._result).toBe(3);
+    expect(promise._value).toBe(3);
   });
 
   it ('2.3.3.2 when reject is called with reason r, reject promise with r', () => {
@@ -432,7 +432,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isRejected()).toBe(true);
-    expect(promise._result.message).toBe("no");
+    expect(promise._value.message).toBe("no");
   });
 
   it ('2.3.3.3 (a) only the first call to resolve takes effect', () => {
@@ -443,7 +443,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isFulfilled()).toBe(true);
-    expect(promise._result).toBe(1);
+    expect(promise._value).toBe(1);
   });
 
   it ('2.3.3.3 (b) only the first call to reject takes effect', () => {
@@ -454,7 +454,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isRejected()).toBe(true);
-    expect(promise._result.message).toBe("no");
+    expect(promise._value.message).toBe("no");
   });
 
   it ('2.3.3.3 (c) calling reject after resolve has no effect', () => {
@@ -465,7 +465,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isFulfilled()).toBe(true);
-    expect(promise._result).toBe(1);
+    expect(promise._value).toBe(1);
   });
 
   it ('2.3.3.3 (d) calling resolve after reject has no effect', () => {
@@ -476,7 +476,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isRejected()).toBe(true);
-    expect(promise._result.message).toBe("no");
+    expect(promise._value.message).toBe("no");
   });
 
   it ('2.3.3.4 when x.then is not a function, resolve promise with x', () => {
@@ -484,7 +484,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isFulfilled()).toBe(true);
-    expect(promise._result).toBe(x);
+    expect(promise._value).toBe(x);
   });
 
   it ('2.3.4 when x is not a function or object, resolve promise with x', () => {
@@ -492,7 +492,7 @@ describe('Aplus Promise resolution', () => {
     const promise = new FakePromise();
     FakePromise.__resolve_promise_aplus__(promise, x);
     expect(promise.isFulfilled()).toBe(true);
-    expect(promise._result).toBe(x);
+    expect(promise._value).toBe(x);
   });
 
 });

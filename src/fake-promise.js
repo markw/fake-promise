@@ -36,10 +36,10 @@ export class FakePromise {
 
     if (x instanceof FakePromise) {
       if (x.isFulfilled()) {
-        promise._private_resolve(x._result);
+        promise._private_resolve(x._value);
       }
       if (x.isRejected()) {
-        promise._private_reject(x._result);
+        promise._private_reject(x._value);
       }
     }
     else if ("object" === typeof x || "function" === typeof f) {
@@ -82,7 +82,7 @@ export class FakePromise {
   }
 
   constructor(executor) {
-    this._result = undefined;
+    this._value = undefined;
     this._state = PENDING;
     this._chainedResolves = [];
     this._chainedRejects = [];
@@ -134,7 +134,7 @@ export class FakePromise {
       case FULFILLED:
         if (isFunction(onResolve)) {
           try {
-            const x = onResolve(this._result);
+            const x = onResolve(this._value);
             FakePromise.__resolve_promise_aplus__(p, x);
           }
           catch (error) {
@@ -142,14 +142,14 @@ export class FakePromise {
           }
         }
         else {
-          p._private_resolve(this._result);
+          p._private_resolve(this._value);
         }
         break;
 
       case REJECTED:
         if (isFunction(onReject)) {
           try {
-            const x = onReject(this._result);
+            const x = onReject(this._value);
             FakePromise.__resolve_promise_aplus__(p, x);
           }
           catch (error) {
@@ -157,7 +157,7 @@ export class FakePromise {
           }
         }
         else {
-          p._private_reject(this._result);
+          p._private_reject(this._value);
         }
         break;
     }
@@ -171,13 +171,13 @@ export class FakePromise {
   // "private" methods, not part of the spec, not intended to be called from outside this class
 
   _private_resolve(value) {
-    this._result = value;
+    this._value = value;
     this._state = FULFILLED;
     this._chainedResolves.forEach(f => f(value));
   }
 
   _private_reject(reason) {
-    this._result = reason;
+    this._value = reason;
     this._state = REJECTED;
     this._chainedRejects.forEach(f => f(reason));
   }
