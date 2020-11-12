@@ -25,7 +25,7 @@ describe('Promise.resolve', () => {
   });
 });
 
-describe('Promises can only resolved once', () => {
+describe('Promises can only be resolved once', () => {
 
   const tryResolvingTwice = (resolve, reject) => {
     resolve("one");
@@ -43,7 +43,7 @@ describe('Promises can only resolved once', () => {
   });
 });
 
-describe('Promise can only rejected once', () => {
+describe('Promises can only be rejected once', () => {
 
   const tryRejectingTwice = (resolve, reject) => {
     reject(Error("no"));
@@ -214,6 +214,27 @@ describe('Promise.then if onResolve is not a function then resolve with the fulf
   });
 });
 
+describe('Promise.then can be called multiple times on the same promise', () => {
+
+  it('FakePromise', async () =>  {
+    expect.assertions(2);
+    let resolve_p;
+    const p = new FakePromise((resolve, reject) => resolve_p = resolve);
+    const p0 = p.then(x => x + 1).then(x => expect(x).toBe(2)).catch(assertionFailed);
+    const p1 = p.then(x => x + 2).then(x => expect(x).toBe(3)).catch(assertionFailed);
+    resolve_p(1);
+  });
+
+  it('Promise', async () =>  {
+    expect.assertions(2);
+    let resolve_p;
+    const p = new Promise((resolve, reject) => resolve_p = resolve);
+    const p0 = p.then(x => x + 1).then(x => expect(x).toBe(2)).catch(assertionFailed);
+    const p1 = p.then(x => x + 2).then(x => expect(x).toBe(3)).catch(assertionFailed);
+    resolve_p(1);
+  });
+});
+
 describe('Promise.catch is ignored if then succeeds', () => {
 
   const expect1 = () => expect(1).toBe(1);
@@ -348,7 +369,6 @@ describe('Promise.all returns resolved promises in order', () => {
 
 describe('Promise.all returns reason of first rejected promise', () => {
 
-
   it('FakePromise', () =>  {
     expect.assertions(1);
 
@@ -361,7 +381,9 @@ describe('Promise.all returns reason of first rejected promise', () => {
     let p2_reject;
     const p2 = new Promise( (resolve,reject) => p2_reject = reject);
 
-    const all = FakePromise.all([p0, p1, p2]).catch(error => expect(error.message).toBe("two")).catch(assertionFailed);
+    const all = FakePromise.all([p0, p1, p2]) 
+      .catch(error => expect(error.message).toBe("two")) 
+      .catch(assertionFailed);
 
     p2_reject(Error("two"));
     p1_reject(Error("one"));
@@ -388,7 +410,7 @@ describe('Promise.all returns reason of first rejected promise', () => {
   });
 });
 
-describe('Aplus Promise resolution', () => {
+describe('Promises/A+ resolution', () => {
   it ('2.3.1 cannot resolve a promise with itself', () => {
     expect.assertions(1);
     const p = new FakePromise();

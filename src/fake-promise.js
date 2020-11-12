@@ -22,7 +22,7 @@ export class FakePromise {
 
     const resolve = y => {
       if (!settled) {
-        FakePromise.__resolve_promise_aplus__(promise, y);
+        promise._private_resolve(y);
         settled = true;
       };
     };
@@ -44,7 +44,7 @@ export class FakePromise {
     }
     else if ("object" === typeof x || "function" === typeof f) {
       if (isFunction(x.then)) {
-        try { x.then(resolve, reject); } 
+        try { x.then(resolve, reject); }
         catch (error) { reject(error); }
       }
       else {
@@ -76,7 +76,9 @@ export class FakePromise {
       };
       promises.forEach(async p => {
         try { push(await p); }
-        catch (error) { reject(error); }
+        catch (error) {
+          reject(error);
+        }
       });
     });
   }
@@ -84,14 +86,13 @@ export class FakePromise {
   constructor(executor) {
     this._value = undefined;
     this._state = PENDING;
-    this._chainedResolves = [];
-    this._chainedRejects = [];
+    this._chainedPromises = [];
 
     if (isFunction(executor)) {
 
       const resolve = x => {
         if (this.isPending()) {
-          this._private_resolve(x);
+          FakePromise.__resolve_promise_aplus__(this, x);
         }
       };
 
@@ -127,8 +128,8 @@ export class FakePromise {
 
     switch(this._state) {
       case PENDING:
-        this._chainedResolves.push(onResolve);
-        this._chainedRejects.push(onReject);
+        const record = {onResolve, onReject, promise: p};
+        this._chainedPromises.push(record);
         break;
 
       case FULFILLED:
@@ -142,7 +143,7 @@ export class FakePromise {
           }
         }
         else {
-          p._private_resolve(this._value);
+          FakePromise.__resolve_promise_aplus__(p, this._value);
         }
         break;
 
@@ -173,12 +174,37 @@ export class FakePromise {
   _private_resolve(value) {
     this._value = value;
     this._state = FULFILLED;
-    this._chainedResolves.forEach(f => f(value));
+    this._chainedPromises.forEach(record => {
+      let newValue = value;
+      if (record.onResolve) {
+        try {
+          newValue = record.onResolve(value);
+          FakePromise.__resolve_promise_aplus__(record.promise, newValue);
+        }
+        catch (error) {
+          record.promise._private_reject(error);
+        }
+      }
+    });
   }
 
   _private_reject(reason) {
     this._value = reason;
     this._state = REJECTED;
-    this._chainedRejects.forEach(f => f(reason));
+    this._chainedPromises.forEach(record => {
+      let newReason = reason;
+      if (record.onReject) {
+        try {
+          newReason =  record.onReject(reason);
+          record.promise._private_reject(newReason);
+        }
+        catch (error) {
+          record.promise._private_reject(error);
+        }
+      }
+      else {
+        record.promise._private_reject(newReason);
+      }
+    });
   }
 }
