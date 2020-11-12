@@ -117,13 +117,13 @@ describe('Promise constructor, reject immediately', () => {
 
   it('FakePromise', async () =>  {
     expect.assertions(1);
-    try { await new FakePromise(rejectWithError); } 
+    try { await new FakePromise(rejectWithError); }
     catch (error) { expect(error.message).toBe("oh no"); }
   });
 
   it('Promise', async () =>  {
     expect.assertions(1);
-    try { await new Promise(rejectWithError); } 
+    try { await new Promise(rejectWithError); }
     catch (error) { expect(error.message).toBe("oh no"); }
   });
 
@@ -137,13 +137,13 @@ describe('Promise constructor, deferred rejection', () => {
 
   it('FakePromise', async () =>  {
     expect.assertions(1);
-    try { await new FakePromise(deferredRejectWithError); } 
+    try { await new FakePromise(deferredRejectWithError); }
     catch (error) { expect(error.message).toBe("oh no"); }
   });
 
   it('Promise', async () =>  {
     expect.assertions(1);
-    try { await new Promise(deferredRejectWithError); } 
+    try { await new Promise(deferredRejectWithError); }
     catch (error) { expect(error.message).toBe("oh no"); }
   });
 
@@ -336,7 +336,7 @@ describe('Promise.all returns resolved promises in order', () => {
 
     let p1_resolve;
     const p1 = new FakePromise( (resolve,reject) => p1_resolve = resolve);
-    
+
     let p2_resolve;
     const p2 = new FakePromise( (resolve,reject) => p2_resolve = resolve);
 
@@ -355,7 +355,7 @@ describe('Promise.all returns resolved promises in order', () => {
 
     let p1_resolve;
     const p1 = new Promise( (resolve,reject) => p1_resolve = resolve);
-    
+
     let p2_resolve;
     const p2 = new Promise( (resolve,reject) => p2_resolve = resolve);
 
@@ -377,12 +377,12 @@ describe('Promise.all returns reason of first rejected promise', () => {
 
     let p1_reject;
     const p1 = new Promise( (resolve,reject) => p1_reject = reject);
-    
+
     let p2_reject;
     const p2 = new Promise( (resolve,reject) => p2_reject = reject);
 
-    const all = FakePromise.all([p0, p1, p2]) 
-      .catch(error => expect(error.message).toBe("two")) 
+    const all = FakePromise.all([p0, p1, p2])
+      .catch(error => expect(error.message).toBe("two"))
       .catch(assertionFailed);
 
     p2_reject(Error("two"));
@@ -398,7 +398,7 @@ describe('Promise.all returns reason of first rejected promise', () => {
 
     let p1_reject;
     const p1 = new Promise( (resolve,reject) => p1_reject = reject);
-    
+
     let p2_reject;
     const p2 = new Promise( (resolve,reject) => p2_reject = reject);
 
