@@ -3,6 +3,10 @@ function isFunction(f) {
   return "function" === typeof f;
 }
 
+function isObject(o) {
+  return "object" === typeof o;
+}
+
 const PENDING   = 0;
 const FULFILLED = 1;
 const REJECTED  = 2;
@@ -159,7 +163,7 @@ export class FakePromise {
         x._chainedPromises.push({onResolve: resolve, onReject: reject, promise});
       }
     }
-    else if ("object" === typeof x || "function" === typeof f) {
+    else if (isObject(x) || isFunction(x)) {
       if (isFunction(x.then)) {
         try { x.then(resolve, reject); }
         catch (error) { reject(error); }
