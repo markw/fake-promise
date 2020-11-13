@@ -199,6 +199,43 @@ describe('Promise.then chained', () => {
   });
 });
 
+describe('Promise.then chained, deferred resolution', () => {
+
+  const add2 = (x) => x + 2;
+  const times3 = (x) => x * 3;
+
+  it('FakePromise', async () =>  {
+    expect.assertions(1);
+    const p = new FakePromise((resolve, reject) => setTimeout(() => resolve(12), 100)).then(add2).then(times3);
+    expect(await p).toBe(42);
+  });
+
+  it('Promise', async () =>  {
+    expect.assertions(1);
+    const p = new Promise((resolve, reject) => setTimeout(() => resolve(12), 100)).then(add2).then(times3);
+    expect(await p).toBe(42);
+  });
+});
+
+describe('Promise.then chained, each then returns a promise', () => {
+
+  it('FakePromise', async () =>  {
+    expect.assertions(1);
+    const p = await FakePromise.resolve(12)
+      .then(x => FakePromise.resolve(x + 2))
+      .then(x => FakePromise.resolve(x * 3));
+    expect(p).toBe(42);
+  });
+
+  it('Promise', async () =>  {
+    expect.assertions(1);
+    const p = await Promise.resolve(12)
+      .then(x => Promise.resolve(x + 2))
+      .then(x => Promise.resolve(x * 3));
+    expect(p).toBe(42);
+  });
+});
+
 describe('Promise.then if onResolve is not a function then resolve with the fulfilled value', () => {
 
   it('FakePromise', async () =>  {
