@@ -123,7 +123,7 @@ export class FakePromise {
   }
 
   // "private" methods, not part of the spec, not intended to be called from outside this class
-  
+
   // implementation of method described at
   // https://promisesaplus.com/#the-promise-resolution-procedure
   static __resolve_promise_aplus__(promise, x) {
@@ -152,8 +152,11 @@ export class FakePromise {
       if (x.isFulfilled()) {
         promise._private_resolve(x._value);
       }
-      if (x.isRejected()) {
+      else if (x.isRejected()) {
         promise._private_reject(x._value);
+      }
+      else {
+        x._chainedPromises.push({onResolve: resolve, onReject: reject, promise});
       }
     }
     else if ("object" === typeof x || "function" === typeof f) {

@@ -217,6 +217,27 @@ describe('Promise.then chained, deferred resolution', () => {
   });
 });
 
+describe('Promise.then chained, deferred resolution of all thens', () => {
+
+  it('FakePromise', async () =>  {
+    expect.assertions(1);
+    const p = FakePromise.resolve(12)
+      .then(x => new FakePromise((resolve, reject) => setTimeout(() => resolve(x + 2), 100)))
+      .then(x => new FakePromise((resolve, reject) => setTimeout(() => resolve(x * 3),  50)));
+
+    expect(await p).toBe(42);
+  });
+
+  it('Promise', async () =>  {
+    expect.assertions(1);
+    const p = Promise.resolve(12)
+      .then(x => new Promise((resolve, reject) => setTimeout(() => resolve(x + 2), 100)))
+      .then(x => new Promise((resolve, reject) => setTimeout(() => resolve(x * 3),  50)));
+
+    expect(await p).toBe(42);
+  });
+});
+
 describe('Promise.then chained, each then returns a promise', () => {
 
   it('FakePromise', async () =>  {
