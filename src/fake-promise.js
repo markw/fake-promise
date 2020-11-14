@@ -55,7 +55,7 @@ export class FakePromise {
 
       const reject = (x) => {
         if (this.isPending()) {
-          this._private_reject(x);
+          this._reject(x);
         }
       };
 
@@ -96,7 +96,7 @@ export class FakePromise {
             FakePromise.__resolve_promise_aplus__(p, x);
           }
           catch (error) {
-            p._private_reject(error);
+            p._reject(error);
           }
         }
         else {
@@ -111,11 +111,11 @@ export class FakePromise {
             FakePromise.__resolve_promise_aplus__(p, x);
           }
           catch (error) {
-            p._private_reject(error);
+            p._reject(error);
           }
         }
         else {
-          p._private_reject(this._value);
+          p._reject(this._value);
         }
         break;
     }
@@ -133,7 +133,7 @@ export class FakePromise {
       FakePromise.__resolve_promise_aplus__(p, this);
     }
     catch (error) {
-      p._private_reject(error);
+      p._reject(error);
     }
     return p;
   }
@@ -152,24 +152,24 @@ export class FakePromise {
 
     const resolve = y => {
       if (!settled) {
-        promise._private_resolve(y);
+        promise._resolve(y);
         settled = true;
       };
     };
 
     const reject = a => {
       if (!settled) {
-        promise._private_reject(a);
+        promise._reject(a);
         settled = true;
       }
     };
 
     if (x instanceof FakePromise) {
       if (x.isFulfilled()) {
-        promise._private_resolve(x._value);
+        promise._resolve(x._value);
       }
       else if (x.isRejected()) {
-        promise._private_reject(x._value);
+        promise._reject(x._value);
       }
       else {
         x._chainedPromises.push({onResolve: resolve, onReject: reject, promise});
@@ -181,15 +181,15 @@ export class FakePromise {
         catch (error) { reject(error); }
       }
       else {
-        promise._private_resolve(x);
+        promise._resolve(x);
       }
     }
     else {
-      promise._private_resolve(x);
+      promise._resolve(x);
     }
   }
 
-  _private_resolve(value) {
+  _resolve(value) {
     this._value = value;
     this._state = FULFILLED;
     this._chainedPromises.forEach(record => {
@@ -200,7 +200,7 @@ export class FakePromise {
           FakePromise.__resolve_promise_aplus__(promise, newValue);
         }
         catch (error) {
-          promise._private_reject(error);
+          promise._reject(error);
         }
       }
       else {
@@ -209,7 +209,7 @@ export class FakePromise {
     });
   }
 
-  _private_reject(reason) {
+  _reject(reason) {
     this._value = reason;
     this._state = REJECTED;
     this._chainedPromises.forEach(record => {
@@ -217,14 +217,14 @@ export class FakePromise {
       if (record.onReject) {
         try {
           const newReason =  record.onReject(reason);
-          promise._private_reject(newReason);
+          promise._reject(newReason);
         }
         catch (error) {
-          promise._private_reject(error);
+          promise._reject(error);
         }
       }
       else {
-        promise._private_reject(reason);
+        promise._reject(reason);
       }
     });
   }
