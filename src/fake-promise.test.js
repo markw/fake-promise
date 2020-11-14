@@ -445,7 +445,6 @@ describe('Promise.all returns reason of first rejected promise', () => {
 
     p2_reject(Error("two"));
     p1_reject(Error("one"));
-    p0_reject(Error("zero"));
   });
 
   it('Promise', () =>  {
@@ -464,7 +463,6 @@ describe('Promise.all returns reason of first rejected promise', () => {
 
     p2_reject(Error("two"));
     p1_reject(Error("one"));
-    p0_reject(Error("zero"));
   });
 });
 
