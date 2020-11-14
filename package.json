@@ -20,7 +20,7 @@
     "pretest": "npm run lint"
   },
   "jest": {
-    "verbose": true
+    "verbose": false
   },
   "author": "mwilliams",
   "license": "ISC"

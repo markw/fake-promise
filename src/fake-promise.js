@@ -126,6 +126,18 @@ export class FakePromise {
     return this.then(undefined, onReject);
   }
 
+  finally(onFinally) {
+    const p = new FakePromise();
+    try {
+      onFinally();
+      FakePromise.__resolve_promise_aplus__(p, this);
+    }
+    catch (error) {
+      p._private_reject(error);
+    }
+    return p;
+  }
+
   // "private" methods, not part of the spec, not intended to be called from outside this class
 
   // implementation of method described at

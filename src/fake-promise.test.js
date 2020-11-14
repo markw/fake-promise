@@ -468,6 +468,49 @@ describe('Promise.all returns reason of first rejected promise', () => {
   });
 });
 
+describe('Promise.finally is invoked with no args', () => {
+  it('FakePromise', async () => {
+    expect.assertions(1);
+    FakePromise.resolve(1).finally(x => expect(x).toBe(undefined)).catch(assertionFailed);
+  });
+  it('Promise', async () => {
+    expect.assertions(1);
+    Promise.resolve(1).finally(x => expect(x).toBe(undefined)).catch(assertionFailed);
+  });
+});
+
+describe('Promise.finally returns a promise fulfilled with the previous value', () => {
+
+  it('FakePromise', async () => {
+    expect.assertions(1);
+    const r = await FakePromise.resolve(1).finally(() => 2);
+    expect(r).toBe(1);
+  });
+
+  it('Promise', async () => {
+    expect.assertions(1);
+    const r = await Promise.resolve(1).finally(() => 2);
+    expect(r).toBe(1);
+  });
+});
+
+describe('Promise.finally returns a rejected promise if error is thrown', () => {
+
+  const throwError = () => { throw new Error("bah"); };
+
+  it('FakePromise', async () => {
+    expect.assertions(1);
+    try { await FakePromise.resolve(1).finally(throwError); }
+    catch (e) { expect(e.message).toBe("bah"); }
+  });
+
+  it('Promise', async () => {
+    expect.assertions(1);
+    try { await Promise.resolve(1).finally(throwError); }
+    catch (e) { expect(e.message).toBe("bah"); }
+  });
+});
+
 describe('Promises/A+ resolution', () => {
   it ('2.3.1 cannot resolve a promise with itself', () => {
     expect.assertions(1);
