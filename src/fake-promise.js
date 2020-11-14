@@ -85,8 +85,7 @@ export class FakePromise {
 
     switch(this._state) {
       case PENDING:
-        const record = {onResolve, onReject, promise: p};
-        this._chainedPromises.push(record);
+        this._chain(p, onResolve, onReject);
         break;
 
       case FULFILLED:
@@ -172,7 +171,7 @@ export class FakePromise {
         promise._reject(x._value);
       }
       else {
-        x._chainedPromises.push({onResolve: resolve, onReject: reject, promise});
+        x._chain(promise, resolve, reject);
       }
     }
     else if (isObject(x) || isFunction(x)) {
@@ -227,5 +226,9 @@ export class FakePromise {
         promise._reject(reason);
       }
     });
+  }
+
+  _chain(promise, onResolve, onReject) {
+    this._chainedPromises.push({promise, onResolve, onReject});
   }
 }
