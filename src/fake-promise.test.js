@@ -431,13 +431,13 @@ describe('Promise.all returns reason of first rejected promise', () => {
     expect.assertions(1);
 
     let p0_reject;
-    const p0 = new Promise( (resolve,reject) => p0_reject = reject);
+    const p0 = new FakePromise( (resolve,reject) => p0_reject = reject);
 
     let p1_reject;
-    const p1 = new Promise( (resolve,reject) => p1_reject = reject);
+    const p1 = new FakePromise( (resolve,reject) => p1_reject = reject);
 
     let p2_reject;
-    const p2 = new Promise( (resolve,reject) => p2_reject = reject);
+    const p2 = new FakePromise( (resolve,reject) => p2_reject = reject);
 
     const all = FakePromise.all([p0, p1, p2])
       .catch(error => expect(error.message).toBe("two"))
@@ -466,6 +466,93 @@ describe('Promise.all returns reason of first rejected promise', () => {
   });
 });
 
+describe('Promise.any returns first fulfilled promise', () => {
+
+  it('FakePromise', () =>  {
+    expect.assertions(1);
+
+    let p0_resolve;
+    const p0 = new FakePromise( (resolve,reject) => p0_resolve = resolve);
+
+    let p1_resolve;
+    const p1 = new FakePromise( (resolve,reject) => p1_resolve = resolve);
+
+    let p2_resolve;
+    const p2 = new FakePromise( (resolve,reject) => p2_resolve = resolve);
+
+    FakePromise.any([p0, p1, p2])
+      .then(n => expect(n).toBe(2))
+      .catch(assertionFailed);
+
+    p2_resolve(2);
+    p1_resolve(1);
+  });
+
+  it('Promise', () =>  {
+    expect.assertions(1);
+
+    let p0_resolve;
+    const p0 = new Promise( (resolve,reject) => p0_resolve = resolve);
+
+    let p1_resolve;
+    const p1 = new Promise( (resolve,reject) => p1_resolve = resolve);
+
+    let p2_resolve;
+    const p2 = new Promise( (resolve,reject) => p2_resolve = resolve);
+
+    Promise.any([p0, p1, p2])
+      .then(n => expect(n).toBe(2))
+      .catch(assertionFailed);
+
+    p2_resolve(2);
+    p1_resolve(1);
+  });
+});
+
+describe('Promise.any returns all rejected reasons', () => {
+
+  it('FakePromise', () =>  {
+    expect.assertions(1);
+
+    let p0_reject;
+    const p0 = new FakePromise( (resolve,reject) => p0_reject = reject);
+
+    let p1_reject;
+    const p1 = new FakePromise( (resolve,reject) => p1_reject = reject);
+
+    let p2_reject;
+    const p2 = new FakePromise( (resolve,reject) => p2_reject = reject);
+
+    FakePromise.any([p0, p1, p2])
+      .catch(error => expect(error.errors.map(e => e.message)).toStrictEqual(["zero","one","two"]))
+      .catch(assertionFailed);
+
+    p2_reject(new Error("two"));
+    p0_reject(new Error("zero"));
+    p1_reject(new Error("one"));
+  });
+
+  it('Promise', () =>  {
+    expect.assertions(1);
+
+    let p0_reject;
+    const p0 = new Promise( (resolve,reject) => p0_reject = reject);
+
+    let p1_reject;
+    const p1 = new Promise( (resolve,reject) => p1_reject = reject);
+
+    let p2_reject;
+    const p2 = new Promise( (resolve,reject) => p2_reject = reject);
+
+    Promise.any([p0, p1, p2])
+      .catch(error => expect(error.errors.map(e => e.message)).toStrictEqual(["zero","one","two"]))
+      .catch(assertionFailed);
+
+    p2_reject(new Error("two"));
+    p0_reject(new Error("zero"));
+    p1_reject(new Error("one"));
+  });
+});
 describe('Promise.finally is invoked with no args', () => {
   it('FakePromise', async () => {
     expect.assertions(1);

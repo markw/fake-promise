@@ -22,21 +22,30 @@ export class FakePromise {
   }
 
   static all(promises) {
-
     return new FakePromise( (resolve,reject) => {
-      const results = [];
-      const push = x => {
-        results.push(x);
-        if (results.length === promises.length) {
-          resolve(results);
+      const values = [];
+      let count = 0;
+      const push = index => x => {
+        values[index] = x;
+        if (++count === promises.length) {
+          resolve(values);
         }
       };
-      promises.forEach(async p => {
-        try { push(await p); }
-        catch (error) {
-          reject(error);
+      promises.map((p,index) => p.then(push(index), reject));
+    });
+  }
+
+  static any(promises) {
+    return new FakePromise( (resolve,reject) => {
+      const errors = [];
+      let count = 0;
+      const push = index => x => {
+        errors[index] = x;
+        if (++count === promises.length) {
+          reject({errors});
         }
-      });
+      };
+      promises.map((p,index) => p.then(resolve, push(index)));
     });
   }
 
@@ -59,12 +68,13 @@ export class FakePromise {
         }
       };
 
-      try {
-        executor(resolve.bind(this), reject.bind(this));
+      try { 
+        executor(resolve, reject); 
       }
-      catch (error) {
-        reject(error);
+      catch (error) { 
+        reject(error); 
       }
+
     }
   }
 
