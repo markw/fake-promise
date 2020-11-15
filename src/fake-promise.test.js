@@ -562,6 +562,23 @@ describe('Promise.any returns all rejected reasons', () => {
     p1_reject(new Error("one"));
   });
 
+  it('FakePromise with timeouts', async () =>  {
+    expect.assertions(1);
+
+    const promises = [
+      new FakePromise((resolve,reject) => setTimeout(reject, 20, new Error("zero"))),
+      new FakePromise((resolve,reject) => setTimeout(reject, 30, new Error("one"))),
+      new FakePromise((resolve,reject) => setTimeout(reject, 10, new Error("two"))),
+    ];
+
+    try {
+      await FakePromise.any(promises);
+    }
+    catch (error) {
+      expect(error.errors.map(e => e.message)).toStrictEqual(["zero","one","two"]);
+    }
+  });
+
   it('Promise', () =>  {
     expect.assertions(1);
 
@@ -594,7 +611,6 @@ describe('Promise.finally is invoked with no args', () => {
     Promise.resolve(1).finally(x => expect(x).toBe(undefined)).catch(assertionFailed);
   });
 });
-
 
 describe('Promise.finally returns a promise fulfilled with the previous value', () => {
 
