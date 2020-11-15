@@ -439,12 +439,28 @@ describe('Promise.all returns reason of first rejected promise', () => {
     let p2_reject;
     const p2 = new FakePromise( (resolve,reject) => p2_reject = reject);
 
-    const all = FakePromise.all([p0, p1, p2])
+    FakePromise.all([p0, p1, p2])
       .catch(error => expect(error.message).toBe("two"))
       .catch(assertionFailed);
 
     p2_reject(Error("two"));
     p1_reject(Error("one"));
+  });
+
+  it('FakePromise with timeout', async () =>  {
+    expect.assertions(1);
+
+    const p0 = new FakePromise( (resolve,reject) => setTimeout(reject, 100, new Error("zero")));
+    const p1 = new FakePromise( (resolve,reject) => setTimeout(reject,  10, new Error("one")));
+    const p2 = new FakePromise( (resolve,reject) => setTimeout(reject,  50, new Error("two")));
+
+    try {
+      await FakePromise.all([p0, p1, p2]);
+    }
+    catch (error) {
+      expect(error.message).toBe("one");
+    }
+
   });
 
   it('Promise', () =>  {
