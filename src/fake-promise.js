@@ -7,6 +7,17 @@ function isObject(o) {
   return "object" === typeof o;
 }
 
+function accumulator(promises, onComplete, fx) {
+  const items = [];
+  let count = 0;
+  return index => x => {
+    items[index] = x;
+    if (++count === promises.length) {
+      onComplete(fx(items));
+    }
+  };
+}
+
 const PENDING   = 0;
 const FULFILLED = 1;
 const REJECTED  = 2;
@@ -23,30 +34,27 @@ export class FakePromise {
 
   static all(promises) {
     return new FakePromise( (resolve,reject) => {
-      const values = [];
-      let count = 0;
-      const push = index => x => {
-        values[index] = x;
-        if (++count === promises.length) {
-          resolve(values);
-        }
-      };
-      promises.map((p,index) => p.then(push(index), reject));
+      const accumulate = accumulator(promises, resolve, x => x);
+      promises.map((p,index) => p.then(accumulate(index), reject));
     });
   }
 
   static any(promises) {
     return new FakePromise( (resolve,reject) => {
-      const errors = [];
-      let count = 0;
-      const push = index => x => {
-        errors[index] = x;
-        if (++count === promises.length) {
-          reject({errors});
-        }
-      };
-      promises.map((p,index) => p.then(resolve, push(index)));
+      const accumulate = accumulator(promises, reject, errors => ({errors}));
+      promises.map((p,index) => p.then(resolve, accumulate(index)));
     });
+  }
+
+  static __accumulator__(promises, onComplete, fx) {
+    const items = [];
+    let count = 0;
+    return index => x => {
+      items[index] = x;
+      if (++count === promises.length) {
+        onComplete(fx(items));
+      }
+    };
   }
 
   constructor(executor) {
