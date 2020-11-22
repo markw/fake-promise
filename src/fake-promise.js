@@ -46,17 +46,6 @@ export class FakePromise {
     });
   }
 
-  static __accumulator__(promises, onComplete, fx) {
-    const items = [];
-    let count = 0;
-    return index => x => {
-      items[index] = x;
-      if (++count === promises.length) {
-        onComplete(fx(items));
-      }
-    };
-  }
-
   constructor(executor) {
     this._value = undefined;
     this._state = PENDING;
